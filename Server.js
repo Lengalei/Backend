@@ -1,5 +1,6 @@
 const express = require("express");
 const workoutRoutes = require("./routes/workouts");
+const userRoutes = require("./routes/userRoutes");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
@@ -29,3 +30,4 @@ mongoose
   });
 // routes
 app.use("/api/workout", workoutRoutes);
+app.use("/api/user", userRoutes);
