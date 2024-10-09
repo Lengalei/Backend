@@ -1,5 +1,7 @@
 const User = require("../models/usermodel");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+//jsonwebtoken
 
 //registration of a user
 module.exports.createUser = async (req, res) => {
@@ -52,6 +54,7 @@ module.exports.loginUser = async (req, res) => {
   }
 };
 
+//get a user
 module.exports.getUser = async (req, res) => {
   try {
     const users = await User.find({});
@@ -61,5 +64,63 @@ module.exports.getUser = async (req, res) => {
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: "Error Getting Users" });
+  }
+};
+
+//register user 2.0
+module.exports.createrUser = async (req, res) => {
+  const { userName, email, password } = req.body;
+  try {
+    //hash the password then store it
+    const salt = await bcrypt.genSalt(10);
+    const hashedPass = await bcrypt.hash(password, salt);
+
+    // we loged in the user
+    const createdUser = await User.create({
+      userName,
+      email,
+      password: hashedPass,
+    });
+    if (!createdUser) {
+      return res.status(400).json({ message: "Error creating user" });
+    }
+    res.status(200).json(createdUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// login user
+module.exports.login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const foundUser = await User.findOne({ email: email });
+    if (!foundUser) {
+      return res.status(404).json({ message: "Invalid Email credential" });
+    }
+
+    //validating the hashed password
+    const isValid = await bcrypt.compare(password, foundUser.password);
+    if (!isValid) {
+      return res.status(404).json({ message: "Invalid password credentials" });
+    }
+
+    const age = 1000 * 60 * 60 * 24 * 3; // 3 days
+    //we want to create the json web token
+    const token = jwt.sign({ _id: foundUser._id }, "ruthisbeingapain", {
+      expiresIn: age,
+    });
+    res
+      .status(200)
+      .cookie("adminToken", token, {
+        maxAge: age,
+        // httpOnly:true,
+        // secure:true
+        // sameSite:lax
+      })
+      .json(foundUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
