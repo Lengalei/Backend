@@ -3,13 +3,14 @@ const workoutRoutes = require("./routes/workouts");
 const userRoutes = require("./routes/userRoutes");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 require("dotenv").config();
 
 // express app - middleware
 const app = express();
 app.use(cors());
-
+app.use(cookieParser()); //with this single line of code the entire backend is able to send and receive cookies
 app.use(express.json());
 
 app.use((req, res, next) => {
