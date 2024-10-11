@@ -10,8 +10,9 @@ require("dotenv").config();
 // express app - middleware
 const app = express();
 app.use(cors());
-app.use(cookieParser()); //with this single line of code the entire backend is able to send and receive cookies
 app.use(express.json());
+
+app.use(cookieParser());
 
 app.use((req, res, next) => {
   console.log(req.path, req.method);
